@@ -1,7 +1,7 @@
 import React, {Component} from "react";
-import { ReactGrid, Column, Row, CellChange, TextCell, Id, Cell, CellTemplate, Compatible, Uncertain, getCellProperty, keyCodes, UncertainCompatible} from "@silevis/reactgrid";
+import { ReactGrid, Column, Row, CellChange, TextCell, Cell, CellTemplate, Compatible, Uncertain, getCellProperty, keyCodes, UncertainCompatible} from "@silevis/reactgrid";
 //import Container from 'react-bootstrap/Container';
-import { render } from "react-dom";
+//import { render } from "react-dom";
 import { Button, Container } from "react-bootstrap";
 
 interface SignUpProps {

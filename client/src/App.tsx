@@ -1,5 +1,5 @@
-import React from "react";
-import {useState} from "react"
+import React, {ChangeEvent} from "react";
+//import {useState} from "react"
 //import {ReactGrid, Column, Row, CellChange, TextCell} from "@silevis/reactgrid"
 //import 'C:\planTogether\client2\src\custom.scss'
 //import {style} from "@silevis/reactgrid/styles.css";
@@ -34,13 +34,16 @@ type Page = "login" | "home" | "tripDetails" | "signUp" | "individual-pack" | "a
 export interface AppState {
     page: Page
     user: String
+    email: String
+    password: String
+    confirmPassword: String
     showEdits: boolean
 }
-
+/*
 interface Person {
     name: string;
     surname: string;
-}
+}*/
 
 //const [show, setShow] = useState(false);
 
@@ -48,8 +51,11 @@ export class App extends React.Component<AppProps, AppState> {
     constructor(props: any){
         super(props)
         this.state =  {
-            page: "archive",
-            user: "Caroline Zhu",
+            page: "signUp",
+            user: "",
+            email: "", 
+            password: "", 
+            confirmPassword: "",
             showEdits: false
         }
     }
@@ -61,7 +67,7 @@ export class App extends React.Component<AppProps, AppState> {
         if (this.state.page === "login" || this.state.page === "signUp")
         {
             nodes.push(
-                <div>
+                <div key = "nav bar special">
                     <style type="text/css">
                     {`
                         .color-nav {
@@ -96,7 +102,7 @@ export class App extends React.Component<AppProps, AppState> {
                     <Navbar.Brand  id = "brand-navBar" href="#home">
                     <img
                         alt=""
-                        src="C:\planTogether\client2\img\dinoLogo.webp"
+                        src="C:\git\plan-together\client\public\dinoLogo.webp"
                         width="30"
                         height="30"
                         className="d-inline-block align-top"
@@ -119,7 +125,7 @@ export class App extends React.Component<AppProps, AppState> {
         else 
         {
             nodes.push(
-                <div>
+                <div key = "nav bar regular">
                     <style type="text/css">
                     {`
                         .color-nav {
@@ -353,7 +359,7 @@ export class App extends React.Component<AppProps, AppState> {
 
                         <Form.Group as={BootRow} className="mb-3">
                             <Col sm={{ span: 10, offset: 2 }}>
-                            <Button className = "color-lightBlue" type="submit">Sign in</Button>
+                            <Button  className = "color-lightBlue" type="submit">Sign In</Button>
                             </Col>
                         </Form.Group>
                         </Form>
@@ -371,7 +377,7 @@ export class App extends React.Component<AppProps, AppState> {
                             Email Address
                             </Form.Label>
                             <Col sm={10}>
-                            <Form.Control type="email" placeholder="Email" />
+                            <Form.Control onChange = {this.setNewEmail} type="email" placeholder="Email" />
                             </Col>
                         </Form.Group>
                         <Form.Group as={BootRow} className="mb-3" controlId="formHorizontalEmail">
@@ -379,7 +385,7 @@ export class App extends React.Component<AppProps, AppState> {
                             First Name
                             </Form.Label>
                             <Col sm={10}>
-                            <Form.Control type="text" placeholder="Enter first name" />
+                            <Form.Control onChange = {this.setNewName} type="text" placeholder="Enter first name" />
                             </Col>
                         </Form.Group>
 
@@ -388,7 +394,7 @@ export class App extends React.Component<AppProps, AppState> {
                             Password
                             </Form.Label>
                             <Col sm={10}>
-                            <Form.Control type="password" placeholder="Enter password" />
+                            <Form.Control onChange = {this.setNewPassword} type="password" placeholder="Enter password" />
                             </Col>
                         </Form.Group>
                         <Form.Group as={BootRow} className="mb-3" controlId="formHorizontalPassword">
@@ -396,13 +402,13 @@ export class App extends React.Component<AppProps, AppState> {
                             Confirm Password
                             </Form.Label>
                             <Col sm={10}>
-                            <Form.Control type="password" placeholder="Confirm password" />
+                            <Form.Control onChange = {this.setNewConfirmPassword} type="password" placeholder="Confirm password" />
                             </Col>
                         </Form.Group>
 
                         <Form.Group as={BootRow} className="mb-3">
                             <Col sm={{ span: 10, offset: 2 }}>
-                            <Button className = "color-lightBlue" type="submit">Sign in</Button>
+                            <Button onClick = {this.handleSignUp} className = "color-lightBlue">Sign Up</Button>
                             </Col>
                         </Form.Group>
                         </Form>
@@ -662,6 +668,57 @@ export class App extends React.Component<AppProps, AppState> {
     handleToArchive = () => {
         this.setState({page: "archive"})
     }
+
+    setNewEmail = (evt:ChangeEvent<HTMLInputElement>): void => {
+        this.setState({email:evt.target.value})
+    }
+    setNewName = (evt:ChangeEvent<HTMLInputElement>): void => {
+        this.setState({user:evt.target.value})
+    }
+    setNewPassword = (evt:ChangeEvent<HTMLInputElement>): void => {
+        this.setState({password:evt.target.value})
+    }
+    setNewConfirmPassword = (evt:ChangeEvent<HTMLInputElement>): void => {
+        this.setState({confirmPassword:evt.target.value})
+    }
+    handleSignUp = (): void => {
+        console.log(this.state.confirmPassword + " " + this.state.email + " " + this.state.user + " " + this.state.password)
+        if (this.state.password===this.state.confirmPassword)
+        {
+            const url = "/api/create-user"
+            fetch(url, {method: "POST", 
+                    body:JSON.stringify({"name": this.state.user, "email": this.state.email, "password": this.state.password}),
+                    headers: {"Content-Type": "application/json"}
+            }).then(this.handleSignUpResponse).catch(this.handleServerError)
+        }
+        else 
+        {
+            alert("passwords do not match!")
+        }
+        
+    }
+
+    handleSignUpResponse = (res: Response): void =>
+    {
+        if (res.status === 200)
+        {
+            console.log("successful post");
+        res.json().then(this.handleSignUpSet)
+        }
+        else 
+        {
+        console.log("unsuccessful post")
+        //this.handleServerError
+        }
+    }
+    handleSignUpSet = (vals: any) => {
+        console.log(vals)
+        this.setState({page:"home"})
+    }
+    handleServerError = (_:Response) => {
+        console.error("unknown error talking to server")
+        console.log("unknown error server error ")
+      }
 }
 
 
