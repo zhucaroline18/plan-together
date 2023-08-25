@@ -69,7 +69,7 @@ const getRows = (people: Person[]): Row[] => [
 
       ]
     }))
-  ];
+];
 
 export class SignUp extends Component<SignUpProps, SignUpState>{
     //setting the state to what is passed in

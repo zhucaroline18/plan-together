@@ -1,4 +1,4 @@
-import React, {ChangeEvent} from "react";
+import React, {ChangeEvent, MouseEvent} from "react";
 //import {useState} from "react"
 //import {ReactGrid, Column, Row, CellChange, TextCell} from "@silevis/reactgrid"
 //import 'C:\planTogether\client2\src\custom.scss'
@@ -25,19 +25,45 @@ import Accordion from 'react-bootstrap/Accordion';
 import { Col, Tab, Table, Tabs } from "react-bootstrap";
 import { SignUp } from "./SignUp";
 
+type Trip = {
+    tripID: number
+    name: string
+    archived: number
+    destination: string
+    date: string
+    additionalDetails: string
+    groupPack: string
+}
+type SimpleTrip = {
+    tripID: number
+    name: string
+}
+
 export interface AppProps {
     //num: number
 }
 
 type Page = "login" | "home" | "tripDetails" | "signUp" | "individual-pack" | "archive" | "individual cost" | "test"
 
+type Member = "creator" | "invited" | "joined" | null
+
 export interface AppState {
     page: Page
-    user: String
-    email: String
-    password: String
-    confirmPassword: String
+    user: string
+    email: string
+    password: string
+    confirmPassword: string
     showEdits: boolean
+    userID: number
+    tripName: string
+    tripID: number
+    memberStatus: Member
+    memberID: number
+    destination: string
+    additionalDetails: string
+    date:string
+    trip: Trip
+    tripList: SimpleTrip[]
 }
 /*
 interface Person {
@@ -50,16 +76,36 @@ interface Person {
 export class App extends React.Component<AppProps, AppState> {
     constructor(props: any){
         super(props)
+        const trip: Trip = {
+            tripID: -1 ,
+            archived: 0,
+            name: "",
+            destination:"", 
+            date:"",
+            additionalDetails:"",
+            groupPack: ""
+        }
+        let triplist: SimpleTrip[] = []
+
         this.state =  {
-            page: "signUp",
+            page: "login",
             user: "",
             email: "", 
             password: "", 
             confirmPassword: "",
-            showEdits: false
+            showEdits: false, 
+            userID: -1,
+            tripName: "",
+            tripID: -1, 
+            memberStatus: null, 
+            memberID: -1, 
+            destination: "",
+            additionalDetails: "", 
+            date: "", 
+            trip: trip, 
+            tripList: triplist
         }
     }
-
 
     render():React.ReactNode {
         let nodes : JSX.Element[]= [];
@@ -102,7 +148,7 @@ export class App extends React.Component<AppProps, AppState> {
                     <Navbar.Brand  id = "brand-navBar" href="#home">
                     <img
                         alt=""
-                        src="C:\git\plan-together\client\public\dinoLogo.webp"
+                        src="client\build\logo192.png"
                         width="30"
                         height="30"
                         className="d-inline-block align-top"
@@ -112,8 +158,8 @@ export class App extends React.Component<AppProps, AppState> {
                     <Navbar.Toggle />
                         <Navbar.Collapse id = "navBarCollapse" className="justify-content-end">
                         <Nav id = "navbar home link" className="me-auto">
-                            <Nav.Link href="#">Log in</Nav.Link>
-                            <Nav.Link href="#">Sign Up</Nav.Link>
+                            <Nav.Link href="#" onClick = {this.goToLogin}>Log in</Nav.Link>
+                            <Nav.Link onClick = {this.goToSignUp} href="#">Sign Up</Nav.Link>
 
                         </Nav>
                         </Navbar.Collapse>
@@ -174,7 +220,7 @@ export class App extends React.Component<AppProps, AppState> {
                         <Navbar.Text id = "signed in as">
                             Signed in as: 
                             <NavDropdown title={this.state.user} id="basic-nav-dropdown">
-                                <NavDropdown.Item id = "logout button" href="#">Logout</NavDropdown.Item>
+                                <NavDropdown.Item onClick = {this.handleLogOut}id = "logout button" href="#">Logout</NavDropdown.Item>
                                 <NavDropdown.Item id = "edit profile button" href="#">Edit Profile</NavDropdown.Item>
                             </NavDropdown>
                         </Navbar.Text>
@@ -242,6 +288,19 @@ export class App extends React.Component<AppProps, AppState> {
         }
         if (this.state.page==="home" )
         {
+            let links: JSX.Element[] = [];
+            console.log(this.state.tripList);
+            for (let i = 0; i<this.state.tripList.length; i++)
+            {
+                
+                links.push(
+                <Container>
+                <div key = {i} className = "mx-auto">
+                    <a href = "#" onClick = {(evt) => this.handleToTrip(evt, this.state.tripList[i].tripID)} >{this.state.tripList[i].name}</a>
+                </div>
+                </Container>
+                )
+            }
             nodes.push(
                 <>
                     <Container fluid className = "p-3">
@@ -251,16 +310,7 @@ export class App extends React.Component<AppProps, AppState> {
                                 Planned Trips
                             </h2>
                         </div>
-                        <div className="mx-auto">
-                            <h5> <a onClick={this.handleToHorseshoe} className = "remove-line" id = "camping" href = "#">Camp at HorseShoe</a></h5>
-                        </div>
-                        <div className="mx-auto">
-                            <h5> <a className = "remove-line" id = "LA" href = "#">Trip to LA</a></h5>
-                        </div>
-                        <div className="mx-auto">
-                            <h5> <a className = "remove-line" id = "Mexico" href = "#">Trip to Mexico</a></h5>
-                        </div>
-                        
+                        {links}
                         </Stack>
                     </Container>
                     
@@ -279,9 +329,9 @@ export class App extends React.Component<AppProps, AppState> {
                             label="Trip Name"
                             className="mb-3"
                         >
-                            <Form.Control type="text" placeholder="Amazing Trip" />
+                            <Form.Control type="text" placeholder="Amazing Trip" onChange = {this.setNewTripName} />
                         </FloatingLabel>
-                            <Button size = "sm" className = "color-lightBlue p-1" type="submit">
+                            <Button onClick = {this.handleCreateTrip} size = "sm" className = "color-lightBlue p-1" type="submit">
                                 Submit
                             </Button>
                         </Form>
@@ -336,19 +386,19 @@ export class App extends React.Component<AppProps, AppState> {
                     <Form>
                         <Form.Group as={BootRow} className="mb-3" controlId="formHorizontalEmail">
                             <Form.Label column sm={2}>
-                            Email
+                                Email
                             </Form.Label>
                             <Col sm={10}>
-                            <Form.Control type="email" placeholder="Email" />
+                            <Form.Control onChange ={this.setNewEmail} type="email" placeholder="Email" />
                             </Col>
                         </Form.Group>
 
                         <Form.Group as={BootRow} className="mb-3" controlId="formHorizontalPassword">
                             <Form.Label column sm={2}>
-                            Password
+                                Password
                             </Form.Label>
                             <Col sm={10}>
-                            <Form.Control type="password" placeholder="Password" />
+                            <Form.Control onChange = {this.setNewPassword} type="password" placeholder="Password" />
                             </Col>
                         </Form.Group>
                         <Form.Group as={BootRow} className="mb-3" controlId="formHorizontalCheck">
@@ -359,7 +409,7 @@ export class App extends React.Component<AppProps, AppState> {
 
                         <Form.Group as={BootRow} className="mb-3">
                             <Col sm={{ span: 10, offset: 2 }}>
-                            <Button  className = "color-lightBlue" type="submit">Sign In</Button>
+                            <Button onClick = {this.handleSignIn} className = "color-lightBlue" type="button">Log In</Button>
                             </Col>
                         </Form.Group>
                         </Form>
@@ -397,7 +447,7 @@ export class App extends React.Component<AppProps, AppState> {
                             <Form.Control onChange = {this.setNewPassword} type="password" placeholder="Enter password" />
                             </Col>
                         </Form.Group>
-                        <Form.Group as={BootRow} className="mb-3" controlId="formHorizontalPassword">
+                        <Form.Group as={BootRow} className="mb-3" controlId="formHorizontalConfirmPassword">
                             <Form.Label column sm={2}>
                             Confirm Password
                             </Form.Label>
@@ -428,13 +478,14 @@ export class App extends React.Component<AppProps, AppState> {
 
                         <div id = "trip title" className = "text-center">
                             <h2 className = "text-center">
-                                Horseshoe Cove Camping
+                                {this.state.tripName}
                             </h2>
+
                         </div>
 
                         <Container className = "w-100">
-                            <h5><b>Where: </b> Horseshoe Cove Campground </h5>
-                            <h5><b>When: </b> 3/11-7/12 </h5>
+                            <h5><b>Where: </b> {this.state.trip.destination} </h5>
+                            <h5><b>When: </b> {this.state.trip.date} </h5>
                             
                         </Container>
                         <div className = "text-left">
@@ -452,13 +503,13 @@ export class App extends React.Component<AppProps, AppState> {
                                     <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                                     <Form.Label>Destination</Form.Label>
                                     <Form.Control
-                                        type="text"
+                                        type="text" onChange = {this.handleChangeDestination} value = {this.state.destination}
                                     />
                                     </Form.Group>
                                     <Form.Group className="mb-3" controlId="exampleForm.ControlInput1">
                                     <Form.Label>Date of trip</Form.Label>
                                     <Form.Control
-                                        type="text"
+                                        type="text" onChange = {this.handleSetDate} value = {this.state.date}
                                     />
                                     </Form.Group>
                                     <Form.Group
@@ -466,7 +517,7 @@ export class App extends React.Component<AppProps, AppState> {
                                     controlId="exampleForm.ControlTextarea1"
                                     >
                                     <Form.Label>Additional Details</Form.Label>
-                                    <Form.Control as="textarea" rows={3} />
+                                    <Form.Control as="textarea" rows={3} onChange = {this.handleSetAdditionalDetails} value = {this.state.additionalDetails}/>
                                     </Form.Group>
                                 </Form>
                             </Modal.Body>
@@ -479,7 +530,7 @@ export class App extends React.Component<AppProps, AppState> {
                             <Button className=" color-lightBlue" onClick={this.handleCloseEdits}>
                                 Close
                             </Button>
-                            <Button className=" color-lightBlue" onClick={this.handleCloseEdits}>
+                            <Button className=" color-lightBlue" onClick={this.handleSaveDetails}>
                                 Save Changes
                             </Button>
                             </Modal.Footer>
@@ -559,7 +610,7 @@ export class App extends React.Component<AppProps, AppState> {
                         <hr/>
 
                         <Container>
-                            <p><b>Additional Details: </b>book plane tickets no later than saturday!</p>
+                            <p><b>Additional Details: </b>{this.state.trip.additionalDetails}</p>
                         </Container>
 
                         </Tab>
@@ -659,14 +710,73 @@ export class App extends React.Component<AppProps, AppState> {
     handleCloseEdits = () => {
         this.setState({showEdits: false})
     }
+
+
+    //////////////////////////////////////////////////////
+    handleSaveDetails = () => {
+        this.setState({showEdits: false});
+        const url = "/api/set-all"
+            fetch(url, {method: "POST", 
+                    body:JSON.stringify({"destination": this.state.destination, "trip_id": this.state.trip.tripID, "date": this.state.date, "additionalDetails": this.state.additionalDetails}),
+                    headers: {"Content-Type": "application/json"}
+            }).then(this.handleSaveDetailsResponse).catch(this.handleServerError)
+
+    }
+    handleSaveDetailsResponse = (res: Response): void => {
+        if (res.status === 200)
+        {
+            console.log("successful post");
+            res.json().then(this.handleSaveDetailsSet)
+        }
+    }
+    handleSaveDetailsSet = (vals:any)=> {
+        const url = "/api/get-details?trip_id=" + encodeURIComponent(this.state.trip.tripID);
+            fetch (url, {method: "GET", 
+            headers: {"Content-Type": "application/json"}
+        }).then(this.handleDetailsSetResponse).catch(this.handleServerError)
+    }
+    handleDetailsSetResponse = (res: Response): void => {
+        if (res.status === 200)
+        {
+            console.log("successful post");
+            res.json().then(this.handleSetTripDetails)
+        }
+    }
+    handleSetTripDetails = (vals: any) => {
+        this.setState({trip: vals});
+        this.setState({page: "tripDetails"});
+    }
+//////////////////////////////////////////////
+
+
+
     handleToHome = () => {
         this.setState({page:"home"})
     }
     handleToHorseshoe = () => {
         this.setState({page: "tripDetails"})
     }
+    
     handleToArchive = () => {
         this.setState({page: "archive"})
+    }
+
+    handleLogOut = () => {
+        this.setState({page: "login"})
+        this.setState({user: ""});
+        this.setState({email: ""});
+        this.setState({password: ""});
+        this.setState({confirmPassword: ""});
+        this.setState({userID:-1});
+    }
+
+    goToLogin = () => 
+    {
+        this.setState({page: "login"})
+    }
+    goToSignUp = () => 
+    {
+        this.setState({page: "signUp"})
     }
 
     setNewEmail = (evt:ChangeEvent<HTMLInputElement>): void => {
@@ -675,12 +785,25 @@ export class App extends React.Component<AppProps, AppState> {
     setNewName = (evt:ChangeEvent<HTMLInputElement>): void => {
         this.setState({user:evt.target.value})
     }
+    handleChangeDestination = (evt:ChangeEvent<HTMLInputElement>): void => {
+        this.setState({destination:evt.target.value})
+    }
+    handleSetAdditionalDetails = (evt:ChangeEvent<HTMLInputElement>): void => {
+        this.setState({additionalDetails:evt.target.value})
+    }
+    handleSetDate = (evt:ChangeEvent<HTMLInputElement>): void => {
+        this.setState({date:evt.target.value})
+    }
     setNewPassword = (evt:ChangeEvent<HTMLInputElement>): void => {
         this.setState({password:evt.target.value})
+    }
+    setNewTripName = (evt:ChangeEvent<HTMLInputElement>): void => {
+        this.setState({tripName:evt.target.value})
     }
     setNewConfirmPassword = (evt:ChangeEvent<HTMLInputElement>): void => {
         this.setState({confirmPassword:evt.target.value})
     }
+    
     handleSignUp = (): void => {
         console.log(this.state.confirmPassword + " " + this.state.email + " " + this.state.user + " " + this.state.password)
         if (this.state.password===this.state.confirmPassword)
@@ -695,9 +818,7 @@ export class App extends React.Component<AppProps, AppState> {
         {
             alert("passwords do not match!")
         }
-        
     }
-
     handleSignUpResponse = (res: Response): void =>
     {
         if (res.status === 200)
@@ -707,18 +828,176 @@ export class App extends React.Component<AppProps, AppState> {
         }
         else 
         {
-        console.log("unsuccessful post")
+            console.log("unsuccessful post")
         //this.handleServerError
         }
     }
-    handleSignUpSet = (vals: any) => {
+    handleSignUpSet = (vals: number) => {
         console.log(vals)
         this.setState({page:"home"})
+        this.setState({userID: vals})
     }
     handleServerError = (_:Response) => {
         console.error("unknown error talking to server")
         console.log("unknown error server error ")
-      }
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////
+    handleToTrip = (evt: MouseEvent<HTMLAnchorElement>, tripID: number) => {
+        const url = "/api/get-details?trip_id=" + encodeURIComponent(tripID);
+            fetch (url, {method: "GET", 
+            headers: {"Content-Type": "application/json"}
+        }).then(this.handleDetailsSetResponse).catch(this.handleServerError)
+    }
+
+    /*handleToTrip = (tripID: number): void => {
+        const url = "/api/get-details?trip_id=" + encodeURIComponent(tripID);
+            fetch (url, {method: "GET", 
+            headers: {"Content-Type": "application/json"}
+        }).then(this.handleDetailsSetResponse).catch(this.handleServerError)
+    }*/
+
+    ///////////////////////////////////////////////////
+    handleCreateTrip = () : void => {
+        const url = "/api/create-trip"
+            fetch(url, {method: "POST", 
+                    body:JSON.stringify({"name": this.state.tripName}),
+                    headers: {"Content-Type": "application/json"}
+            }).then(this.handleCreateTripResponse).catch(this.handleServerError)
+
+    }
+    handleCreateTripResponse = (res: Response): void => {
+        if (res.status === 200)
+        {
+            console.log("successful post");
+            res.json().then(this.handleCreateTripSet)
+        }
+    }
+    handleCreateTripSet = (vals:number)=> {
+        console.log("Successful!!")
+        console.log(vals);
+        this.setState({tripID: vals});
+        this.setState({memberStatus:"creator"})
+        console.log(this.state.tripID);
+        const trips: Trip = {
+            tripID: vals, 
+            archived: 0,
+            name: this.state.tripName, 
+            destination:"", 
+            date:"",
+            additionalDetails:"",
+            groupPack:""
+        }
+        this.setState({trip : trips})
+
+        const url = "/api/add-member"
+
+        fetch(url, {method: "POST", 
+                    body:JSON.stringify({"user_id": this.state.userID, "trip_id": this.state.tripID, "status": "creator" }),
+                    headers: {"Content-Type": "application/json"}
+            }).then(this.handleCreateMemberResponse).catch(this.handleServerError)
+    }
+    /*
+    handleCreateMember = (): void =>{
+        const url = "/api/add-member"
+
+        fetch(url, {method: "POST", 
+                    body:JSON.stringify({"user_id": this.state.userID, "trip_id": this.state.tripID, "status": "creator" }),
+                    headers: {"Content-Type": "application/json"}
+            }).then(this.handleCreateMemberResponse).catch(this.handleServerError)
+    }*/
+
+    handleCreateMemberResponse = (res: Response): void => {
+        if (res.status === 200)
+        {
+            console.log("successful post");
+            res.json().then(this.handleCreateMemberSet)
+        }
+    }
+    handleCreateMemberSet = (vals: number) => {
+        console.log("Successful member creation!");
+        console.log(vals);
+        this.setState({memberID: vals});
+        this.setState({page: "tripDetails"});
+
+    }
+
+    /*
+    handleSignIn = async () => {
+        console.log(this.state.email + " " + this.state.password)
+            const url = "/api/is-valid"
+            const response = await fetch(url, {method: "GET", 
+                    body:JSON.stringify({"email": this.state.email, "password": this.state.password}),
+                    headers: {"Content-Type": "application/json"}
+            });
+            if (response.status === 200) {
+                var jsonObj = await response.json();
+                if (jsonObj< 0) {
+                    this.handleServerError;
+                }
+                else 
+                {
+                    this.setState({userID:jsonObj})
+                    console.log(this.state.userID);
+                }
+            }
+    }*/
+    /*
+    handleSignIn = (): void => {
+            const url = "/api/is-valid"
+            fetch(url, {method: "GET", 
+                    body:JSON.stringify({"email": this.state.email, "password": this.state.password}),
+                    headers: {"Content-Type": "application/json"}
+            }).then(this.handleSignInResponse).catch(this.handleServerError)
+        
+    }*/
+
+    handleSignIn = (): void => {
+        console.log("got to handle sign in")
+        const url = "/api/is-valid?email=" + encodeURIComponent(this.state.email)+ "&password=" + encodeURIComponent(this.state.password);
+        fetch (url, {method: "GET", 
+        headers: {"Content-Type": "application/json"}
+    }).then(this.handleSignInResponse).catch(this.handleServerError)
+    }
+    handleSignInResponse = (res: Response) => {
+        if (res.status === 200)
+        {
+            res.json().then(this.handleSignInSet)
+            console.log("status 200 for sign in ")
+        }
+        else {
+            console.log("not 200 for sign in ")
+        }
+    }
+    handleSignInSet = (vals:number): void => {
+        if (vals <0 )
+        {
+            alert("Username or Password invalid!");
+        }
+        else 
+        {
+            console.log(vals);
+            this.setState({userID: vals});
+
+            const url = "/api/get-all-trips?user_id=" + encodeURIComponent(vals);
+                fetch (url, {method:"GET",
+                headers: {"Content-Type": "application/json"}
+            }).then(this.handleSignInSetResponse).catch(this.handleServerError)
+        }
+    }
+
+    handleSignInSetResponse = (res: Response): void => 
+    {
+        if (res.status === 200)
+        {
+            console.log("successful post");
+            res.json().then(this.handleSetTrips)
+        }
+    }
+    handleSetTrips = (vals:any) => {
+        this.setState({tripList: vals});
+        this.setState({page: "home"});
+    }
 }
 
 

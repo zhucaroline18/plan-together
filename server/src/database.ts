@@ -13,13 +13,14 @@ const db = new sqlite3.Database(db_name, err =>{
 const sql_create = `CREATE TABLE IF NOT EXISTS Users (
     User_ID INTEGER PRIMARY KEY AUTOINCREMENT,
     Name VARCHAR(100) NOT NULL,
-    Email VARCHAR(100) NOT NULL UNIQUE ,
+    Email VARCHAR(100) NOT NULL UNIQUE,
     Password TEXT
 );`;
 
 const sql_create_trip = `CREATE TABLE IF NOT EXISTS Trips (
     Trip_ID INTEGER PRIMARY KEY AUTOINCREMENT,
     Name VARCHAR(100) NOT NULL,
+    Archived INTEGER,
     Destination VARCHAR(100),
     Date VARCHAR(100),
     AdditionalDetails TEXT,
@@ -69,9 +70,9 @@ db.run(sql_create_trip, err => {
     }
     console.log("Successful creation of the 'Trips' table");
 
-    const sql_insert = `INSERT INTO Trips (Trip_ID, Name, Destination, Date, AdditionalDetails, GroupPack) VALUES
-    (1, 'HorseShoe Cove', 'Baker Lake', '7/23/2023', 'no forget to bring mosquito repellent', 'water and grill'),
-    (2, 'San Diego', 'Palm Springs Hotel', 'May 28', 'book tickets no later than saturday', 'tent and sleepingbags');`;
+    const sql_insert = `INSERT INTO Trips (Trip_ID, Name, Destination, Date, AdditionalDetails, GroupPack, Archived) VALUES
+    (1, 'HorseShoe Cove', 'Baker Lake', '7/23/2023', 'no forget to bring mosquito repellent', 'water and grill', 0),
+    (2, 'San Diego', 'Palm Springs Hotel', 'May 28', 'book tickets no later than saturday', 'tent and sleepingbags', 0);`;
 
     db.run(sql_insert, err => {
         if (err) {
@@ -163,7 +164,7 @@ export function getAllDataUsers() {
 
 export function getAllDataTrips() {
     return new Promise((resolve, reject) => {
-        db.all("SELECT Trip_ID, Name, Destination, Date, AdditionalDetails, GroupPack FROM Trips", (err, rows) => {
+        db.all("SELECT Trip_ID, Name, Archived, Destination, Date, AdditionalDetails, GroupPack FROM Trips", (err, rows) => {
             resolve(rows);
         });
     });
@@ -185,39 +186,163 @@ export function getAllDataMembers() {
     });
 }
 
-export function isValid(email: string, password: string): Promise<boolean>{
+export function isValid(email: string, password: string): Promise<number>{
     return new Promise((resolve, reject) => {
-        db.get("SELECT Password FROM Users WHERE Email = ?", [email], (err, row) => {
+        //console.log("email: ${email} password: ${password}");
+        db.get("SELECT Password, User_ID FROM Users WHERE Email = ?", [email], (err, row) => {
             if (row && (row as any).Password == password) {
-                resolve(true);
+                resolve((row as any).User_ID);
             }
             else {
-                resolve(false);
+                resolve(-1);
             }
         });
     });
 }
 
+type Trip = {
+    tripID: number
+    name: string|undefined
+    archived: number|undefined
+    destination: string
+    date: string
+    additionalDetails: string
+    groupPack: string
+}
+
+type SimpleTrip = {
+    tripID: number
+    name:string
+}
+
+export function getAllTrips(userID: number): Promise<SimpleTrip[]>{
+    return new Promise((resolve, reject) => {
+        db.all("SELECT Name, Trips.Trip_ID AS Trip_ID FROM Trips INNER JOIN Members ON Members.Trip_ID = Trips.Trip_ID WHERE Members.User_ID = ?", [userID], (err, rows) => {
+            const trips: SimpleTrip[] = [];
+
+            rows.forEach(function(row) {
+                const simpleTrip: SimpleTrip = {
+                    tripID: (row as any).Trip_ID,
+                    name: (row as any).Name
+                };
+                trips.push(simpleTrip);
+            })
+            resolve (trips);
+            /*
+            trips.push()
+            resolve(rows.map(row=> row['Name']));*/
+        });
+    });
+}
+
+export function getDetails(tripId: number):Promise<Trip>{
+    return new Promise((resolve, reject) => {
+        db.run("SELECT * FROM Trips WHERE Trip_ID = ?", [tripId], (err, row) => {
+            const trip: Trip = {
+                tripID: tripId, 
+                name: (row as any).Name, 
+                archived: (row as any).Archived,
+                destination:(row as any).Destination, 
+                date:(row as any).Date,
+                additionalDetails:(row as any).AdditionalDetails,
+                groupPack:(row as any).GroupPack
+            }
+            resolve(trip);
+        });
+    });
+}
+/*
+export function getDetails(tripId: number):Promise<Trip>{
+    return new Promise((resolve, reject) => {
+        db.run("SELECT * FROM Trips WHERE Trip_ID = ?", [tripId], function (err, row) {
+            console.log(tripId)
+            if (row)
+            {
+                console.log("row exists")
+                console.log(row as any);
+                const trip: Trip = {
+                    tripID: tripId, 
+                    name: (row as any).Name, 
+                    archived: (row as any).Archived,
+                    destination:(row as any).Destination, 
+                    date:(row as any).Date,
+                    additionalDetails:(row as any).AdditionalDetails,
+                    groupPack:(row as any).GroupPack
+                }
+                resolve(trip);
+            }
+            else
+            {
+                console.log("row does not exist")
+                console.log(err);
+            }
+        });
+    });
+}
+/*
+export function createUser(name: string, email: string, password: string): Promise<number>
+{
+    console.log(`name=${name}, email=${email}`);
+    return new Promise((resolve, reject) => {
+        db.run("INSERT INTO Users (Name, Email, Password) VALUES (?, ?, ?)", [name, email, password], function(err) {
+            const userId = (<any>this).lastID;
+            console.log(userId);
+            resolve(userId);
+        });
+    });
+}*/
 
 
 ///////////////////////////////////////////////
 
 
 
-export function createUser(name: string, email: string, password: string)
+export function createUser(name: string, email: string, password: string): Promise<number>
 {
     console.log(`name=${name}, email=${email}`);
     return new Promise((resolve, reject) => {
-        db.run("INSERT INTO Users (Name, Email, Password) VALUES (?, ?, ?)", [name, email, password], (err) => {
+        db.run("INSERT INTO Users (Name, Email, Password) VALUES (?, ?, ?)", [name, email, password], function(err) {
+            const userId = (<any>this).lastID;
+            console.log(userId);
+            resolve(userId);
+        });
+    });
+}
+
+export function createTrip(name: string, archived: number): Promise<number>
+{
+    return new Promise((resolve, reject) => {
+        db.run("INSERT INTO Trips ( Name, Archived) VALUES (?, ?)", [name, archived], function(err) {
+            //console.log((<any>this).lastID);
+            console.log(err);
+            resolve((<any>this).lastID);
+        });
+    });
+}
+
+export function setAllDetails(tripId: number, destination: string, date: string, additionalDetails: string)
+{
+    return new Promise((resolve, reject) => {
+        db.run("UPDATE Trips SET Destination = ?, Date = ?, AdditionalDetails = ?  WHERE Trip_ID = ?", [destination, date, additionalDetails, tripId], (err, rows) => {
             resolve(null);
         });
     });
 }
 
-export function createTrip(name: string)
+export function archiveTrip(tripId: number)
 {
     return new Promise((resolve, reject) => {
-        db.all("INSERT INTO Trips (Name) VALUES (?)", [name], (err, rows) => {
+        
+        db.run("UPDATE Trips SET Archived = ? WHERE Trip_ID = ?", [1, tripId], (err, rows) => {
+            resolve(null);
+        });
+    });
+}
+export function unarchiveTrip(tripId: number)
+{
+    return new Promise((resolve, reject) => {
+        
+        db.run("UPDATE Trips SET Archived = ? WHERE Trip_ID = ?", [0, tripId], (err, rows) => {
             resolve(null);
         });
     });
@@ -277,11 +402,11 @@ export function removeCost(cost_ID: number )
     });
 }
 
-export function addMember( user_ID: number, trip_id: number, status: string )
+export function addMember( user_ID: number, trip_id: number, status: string ): Promise<number>
 {
     return new Promise((resolve, reject) => {
-        db.all("INSERT INTO Members (User_ID, Trip_ID, Status) VALUES (?, ?, ?) ", [user_ID, trip_id, status], (err, rows) => {
-            resolve(rows);
+        db.run("INSERT INTO Members (User_ID, Trip_ID, Status) VALUES (?, ?, ?) ", [user_ID, trip_id, status], function(err, rows) {
+            resolve((<any>this).lastID);
         });
     });
 }

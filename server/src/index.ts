@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import * as db from './database';
-import { addMember, addNewCost, createTrip, createUser, removeCost, removeMember, updateAdditionalDetails, updateDate, updateDestination, updateGroupPack } from './routes';
+import { addMember, addNewCost, archive, createTrip, createUser, getAllTrips, getDetails, isValid, removeCost, removeMember, unarchive, updateAdditionalDetails, updateAllDetails, updateDate, updateDestination, updateGroupPack } from './routes';
 
 import path from 'path';
 
@@ -39,6 +39,15 @@ app.get("/api/getcarolinepassword", async (req, res)=>{
     const rows = await db.isValid("z", "s#170043");
     res.json(rows);
 });
+app.get("/api/all-trip-data", async(req, res)=>{
+    const rows = await db.getAllDataTrips();
+    res.json(rows);
+})
+
+app.get("/api/is-valid", isValid);
+app.get("/api/get-all-trips", getAllTrips);
+app.get("/api/get-details", getDetails);
+
 app.post("/api/create-user", createUser);
 app.post("/api/create-trip", createTrip);
 app.post("/api/set-details", updateAdditionalDetails);
@@ -46,8 +55,11 @@ app.post("/api/set-date", updateDate);
 app.post("/api/set-destination", updateDestination);
 app.post("/api/set-group-pack", updateGroupPack);
 app.post("/api/add-cost", addNewCost);
+app.post("/api/set-all", updateAllDetails);
 app.post("/api/remove-cost", removeCost);
 app.post("/api/add-member", addMember);
 app.post("/api/remove-member", removeMember);
+app.post("/api/archive", archive);
+app.post("/api/unarchive", unarchive);
 
 app.listen(port, () => console.log(`Server listening on ${port}`));
