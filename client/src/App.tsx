@@ -492,7 +492,7 @@ export class App extends React.Component<AppProps, AppState> {
                         >
                             <Form.Control type="text" placeholder="Amazing Trip" onChange = {this.setNewTripName} />
                         </FloatingLabel>
-                            <Button onClick = {this.handleCreateTrip} size = "sm" className = "color-lightBlue p-1" type="submit">
+                            <Button onClick = {this.handleCreateTrip} size = "sm" className = "color-lightBlue p-1" type = "button">
                                 Submit
                             </Button>
                         </Form>
