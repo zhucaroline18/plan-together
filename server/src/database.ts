@@ -333,6 +333,7 @@ type SimpleTrip = {
     memberID: number
 }
 type Members = {
+    memberID: number
     name: string
     email: string
     status: string
@@ -340,12 +341,13 @@ type Members = {
 
 export function getAllMembers(tripId: number): Promise<Members[]>{
     return new Promise((resolve, reject) => {
-        db.all("SELECT Users.Name AS Name, Users.Email AS Email, Members.Status AS Status FROM Users INNER JOIN Members ON Members.User_ID = Users.User_ID WHERE Members.Trip_ID = ?", [tripId], (err, rows) => {
+        db.all("SELECT Users.Name AS Name, Users.Email AS Email, Members.Member_ID AS Member_ID, Members.Status AS Status FROM Users INNER JOIN Members ON Members.User_ID = Users.User_ID WHERE Members.Trip_ID = ?", [tripId], (err, rows) => {
             const trips: Members[] = [];
             //console.log(rows);
             //console.log(rows.length)
             rows.forEach(row => {
                 const member: Members = {
+                    memberID: (row as any).Member_ID,
                     name: (row as any).Name,
                     email: (row as any).Email,
                     status: (row as any).Status
@@ -517,9 +519,9 @@ export function addVolunteer(item_ID: number, trip_id: number, userid: number, a
                 })
             }
         });
-        
     });
 }
+
 export function removeVolunteer(item_id: number, user_id:number )
 {
     return new Promise((resolve, reject) => {
@@ -559,6 +561,14 @@ export function setAllDetails(tripId: number, destination: string, date: string,
             resolve(null);
         });
 
+    });
+}
+export function makeMember(memberID: number)
+{
+    return new Promise((resolve, reject) => {
+        db.all("UPDATE Members SET Status = 'creator' WHERE Member_ID = ? ", [memberID], (err, rows) => {
+            resolve(null);
+        });
     });
 }
 

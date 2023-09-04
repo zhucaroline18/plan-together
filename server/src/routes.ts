@@ -173,6 +173,12 @@ export async function getDetails(req: Request, res: Response) {
     res.json(trip);
 }
 
+export async function makeMember(req: Request, res: Response) {
+    const tripID = req.body.member_id;
+    const trip = await db.makeMember(tripID);
+    res.json(trip);
+}
+
 export async function createUser (req: Request, res: Response) {
     const name = req.body.name;
     const email = req.body.email;

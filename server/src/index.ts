@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import * as db from './database';
-import { addGroupItem, addMember, addNewCost, addVolunteer, archive, createTrip, createUser, getAllArchivedTrips, getAllExpense, getAllGroupItems, getAllInvitedTrips, getAllMembers, getAllTrips, getAllVolunteers, getDetails, getMemberStatus, hasUser, isValid, isValid2, joinTrip, removeCost, removeItem, removeMember, removeVolunteer, unarchive, updateAdditionalDetails, updateAllDetails, updateDate, updateDestination, updateGroupPack } from './routes';
+import { addGroupItem, addMember, addNewCost, addVolunteer, archive, createTrip, createUser, getAllArchivedTrips, getAllExpense, getAllGroupItems, getAllInvitedTrips, getAllMembers, getAllTrips, getAllVolunteers, getDetails, getMemberStatus, hasUser, isValid, isValid2, joinTrip, makeMember, removeCost, removeItem, removeMember, removeVolunteer, unarchive, updateAdditionalDetails, updateAllDetails, updateDate, updateDestination, updateGroupPack } from './routes';
 
 import path from 'path';
 
@@ -91,6 +91,8 @@ app.post("/api/remove-member", removeMember);
 app.post("/api/archive", archive);
 app.post("/api/unarchive", unarchive);
 app.post("/api/add-group-item", addGroupItem)
+app.post("/api/make-creator", makeMember)
+
 app.post("/api/add-volunteer", addVolunteer)
 
 

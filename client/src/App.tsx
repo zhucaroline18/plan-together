@@ -5,7 +5,7 @@ import React, {ChangeEvent, MouseEvent} from "react";
 //import {style} from "@silevis/reactgrid/styles.css";
 
 import "@silevis/reactgrid/styles.css";
-import { MDBInput,MDBBtn, MDBIcon } from 'mdb-react-ui-kit';
+import { MDBInput,MDBBtn, MDBIcon, MDBRow, MDBCol, MDBTable, MDBTableHead, MDBTableBody } from 'mdb-react-ui-kit';
 import 'bootstrap/dist/css/bootstrap.min.css';
 //import 'mdb-react-ui-kit/dist/css/mdb.min.css';
 
@@ -25,7 +25,7 @@ import Accordion from 'react-bootstrap/Accordion';
 import { CloseButton, Col, OverlayTrigger, Popover, Tab, Table, Tabs } from "react-bootstrap";
 //import { SignUp } from "./SignUp";
 //import { NumberLiteralType } from "typescript";
-import { ArrowBarUp, ArrowRight } from 'react-bootstrap-icons';
+import { ArrowBarUp, ArrowRight, PersonCheck, Star } from 'react-bootstrap-icons';
 
 
 type Trip = {
@@ -52,7 +52,7 @@ type Page = "login" | "home" | "tripDetails" | "signUp" | "individual-pack" | "a
 type Member = "creator" | "invited" | "joined" | null
 
 type Members = {
-    //tripID: number
+    memberID: number
     name: string
     email: string
     status: string
@@ -217,6 +217,12 @@ export class App extends React.Component<AppProps, AppState> {
                         .accordion-button:not(.collapsed) {
                             background-color: #FFCCBB;
                         }
+                        .large-width {
+                            width: 300;
+                        }
+                        .rightalign {
+                            text-align: right;
+                        }
                     `}
                     </style>
                     <Navbar className = "color-nav" id = "navBar"  data-bs-theme="dark">
@@ -272,6 +278,12 @@ export class App extends React.Component<AppProps, AppState> {
                         .accordion-button:not(.collapsed) {
                             background-color: #FFCCBB;
                         }
+                        .alignleft {
+                            text-align: left;
+                        }
+                        .table td {
+                            text-align: center;
+                            } 
                     `}
                     </style>
                     <Navbar className = "color-nav" id = "navBar"  data-bs-theme="dark">
@@ -289,7 +301,6 @@ export class App extends React.Component<AppProps, AppState> {
                     <Navbar.Toggle />
                         <Navbar.Collapse id = "navBarCollapse" className="justify-content-end">
                         <Nav id = "navbar home link" className="me-auto">
-                            <Nav.Link onClick={this.handleToHome} href="#">Home</Nav.Link>
                             <Nav.Link onClick={this.handleToArchive} href="#">Archive</Nav.Link>
 
                         </Nav>
@@ -297,7 +308,6 @@ export class App extends React.Component<AppProps, AppState> {
                             Signed in as: 
                             <NavDropdown title={this.state.user} id="basic-nav-dropdown">
                                 <NavDropdown.Item onClick = {this.handleLogOut}id = "logout button" href="#">Logout</NavDropdown.Item>
-                                <NavDropdown.Item id = "edit profile button" href="#">Edit Profile</NavDropdown.Item>
                             </NavDropdown>
                         </Navbar.Text>
                         </Navbar.Collapse>
@@ -322,9 +332,8 @@ export class App extends React.Component<AppProps, AppState> {
                 );
                 const popoverClickRootDelete = (
                     <Popover id="popover-trigger-click-root-close" title="Popover bottom">
-                        <div className = "p-2">
-                            Permanently delete trip?
-                        <Button className = "color-lightBlue" onClick = {(evt) => this.handleRemoveMember(evt, this.state.archivedTrips[i].tripID)}>Delete Trip</Button>
+                        <div className = "m-1">
+                        <Button className = "color-lightBlue m-1" onClick = {(evt) => this.handleRemoveMember(evt, this.state.archivedTrips[i].tripID)}>Permanently Delete</Button>
                         </div>
                     </Popover>
                 );
@@ -337,9 +346,11 @@ export class App extends React.Component<AppProps, AppState> {
                         <td>
                             <OverlayTrigger
                             trigger ="click" rootClose placement = "bottom" overlay = {popoverClickRootRestore}>
-                                <Button variant = "link">
-                                <ArrowBarUp />
-                                </Button>
+                                <h3>
+                                    <a>
+                                    <ArrowBarUp />
+                                    </a>
+                                </h3>
                                 
 
                             </OverlayTrigger>
@@ -350,7 +361,6 @@ export class App extends React.Component<AppProps, AppState> {
                             <CloseButton/>
                             </OverlayTrigger>
                         </td>
-                        
                     </tr>
                 )
             }
@@ -365,11 +375,11 @@ export class App extends React.Component<AppProps, AppState> {
                         </div>
                         
                         
-                        <Table borderless hover className = "mx-auto p-3 w-25">
-                            <tbody>
+                        <MDBTable borderless hover align = "middle" className = "mx-auto p-3 w-50">
+                            <MDBTableBody>
                                 {links}
-                            </tbody>
-                        </Table>
+                            </MDBTableBody>
+                        </MDBTable>
                         </Stack>
                     </Container>
                     
@@ -391,11 +401,11 @@ export class App extends React.Component<AppProps, AppState> {
                 );
                 
                 links.push(
-                    <tr>
-                        <td>
-                            <h5><a style={{ textDecoration: 'none', color: '#006C84' }} className = "mx-auto" href = "#" onClick = {(evt) => this.handleToTrip(evt, this.state.tripList[i].tripID)} >{this.state.tripList[i].name}</a></h5>
+                    <tr className = "rightalign">
+                        <td className = "align-middle">
+                            <h5><a style={{ textDecoration: 'none', color: '#006C84' }} href = "#" onClick = {(evt) => this.handleToTrip(evt, this.state.tripList[i].tripID)} >{this.state.tripList[i].name}</a></h5>
                         </td>
-                        <td>
+                        <td className = "alignleft">
                             <OverlayTrigger
                             trigger ="click" rootClose placement = "bottom" overlay = {popoverClickRootClose}>
                             <CloseButton/>
@@ -426,7 +436,7 @@ export class App extends React.Component<AppProps, AppState> {
                         </div>
                         
                         
-                        <Table borderless hover className = "mx-auto p-3 w-25">
+                        <Table borderless hover className = "mx-auto p-3 w-50">
                             <tbody>
                                 {links}
                             </tbody>
@@ -535,11 +545,6 @@ export class App extends React.Component<AppProps, AppState> {
                             <Form.Control onChange = {this.setNewPassword} type="password" placeholder="Password" />
                             </Col>
                         </Form.Group>
-                        <Form.Group as={BootRow} className="mb-3" controlId="formHorizontalCheck">
-                            <Col sm={{ span: 10, offset: 2 }}>
-                            <Form.Check label="Remember me" />
-                            </Col>
-                        </Form.Group>
 
                         <Form.Group as={BootRow} className="mb-3">
                             <Col sm={{ span: 10, offset: 2 }}>
@@ -603,16 +608,80 @@ export class App extends React.Component<AppProps, AppState> {
         else if (this.state.page==="tripDetails"){
             let members : JSX.Element[]= [];
 
-            for (let i = 0; i<this.state.memberList.length; i++)
+            if (this.state.memberStatus === "creator")
             {
-                members.push(
-                    <tr>
-                        <td>{i+1}</td>
-                        <td>{this.state.memberList[i].name}</td>
-                        <td>{this.state.memberList[i].email}</td>
-                        <td>{this.state.memberList[i].status}</td>
-                    </tr>
-                )
+                for (let i = 0; i<this.state.memberList.length; i++)
+                {
+                    if (this.state.memberList[i].status === "joined")
+                    {
+                        const popoverClickRootRestore = (
+                            <Popover id="popover-trigger-click-root-close" title="Popover bottom">
+                                <div className = "p-1">
+                                <Button className = "color-lightBlue" onClick = {(evt) =>this.makeCreator(evt, this.state.memberList[i].memberID)}>Promote to Creator</Button>
+                                </div>
+                            </Popover>
+                        );
+                        members.push(
+                            <tr>
+                                <td>{i+1}</td>
+                                <td>{this.state.memberList[i].name}</td>
+                                <td>{this.state.memberList[i].email}</td>
+                                <td>{this.state.memberList[i].status}</td>
+                                <td>
+                                <OverlayTrigger
+                                    trigger ="click" rootClose placement = "bottom" overlay = {popoverClickRootRestore}>
+                                    <PersonCheck/>
+                                </OverlayTrigger>
+                                </td>
+                            </tr>
+                        )
+                    }
+                    else{
+                        members.push(
+                            <tr>
+                                <td>{i+1}</td>
+                                <td>{this.state.memberList[i].name}</td>
+                                <td>{this.state.memberList[i].email}</td>
+                                <td>{this.state.memberList[i].status}</td>
+                                <td></td>
+                            </tr>
+                        )
+                    }
+                }
+            }
+            else 
+            {
+                for (let i = 0; i<this.state.memberList.length; i++)
+                {
+                    if (this.state.memberList[i].status === "joined")
+                    {
+                        const popoverClickRootRestore = (
+                            <Popover id="popover-trigger-click-root-close" title="Popover bottom">
+                                <div className = "p-1">
+                                <Button className = "color-lightBlue" onClick = {(evt) =>this.makeCreator(evt, this.state.memberList[i].memberID)}>Promote to Creator</Button>
+                                </div>
+                            </Popover>
+                        );
+                        members.push(
+                            <tr>
+                                <td>{i+1}</td>
+                                <td>{this.state.memberList[i].name}</td>
+                                <td>{this.state.memberList[i].email}</td>
+                                <td>{this.state.memberList[i].status}</td>
+                            </tr>
+                        )
+                    }
+                    else{
+                        members.push(
+                            <tr>
+                                <td>{i+1}</td>
+                                <td>{this.state.memberList[i].name}</td>
+                                <td>{this.state.memberList[i].email}</td>
+                                <td>{this.state.memberList[i].status}</td>
+                            </tr>
+                        )
+                    }
+                }
             }
             
 
@@ -640,9 +709,9 @@ export class App extends React.Component<AppProps, AppState> {
                                     label="Email of invited member"
                                     className="mb-3"
                                 >
-                                <Form.Control onChange = {this.setInvitedEmail} type="email" />
+                                <Form.Control onChange = {this.setInvitedEmail} type="email" defaultValue = {this.state.invitedEmail}/>
                                 </FloatingLabel>
-                                    <Button size = "sm" className = "color-lightBlue p-1" type="submit" onClick = {this.sendInvite1} value = "">
+                                    <Button size = "sm" className = "color-lightBlue p-1" type="button" onClick = {this.sendInvite1} >
                                         Send Invite
                                     </Button>
                                 </Form>
@@ -660,7 +729,7 @@ export class App extends React.Component<AppProps, AppState> {
                                 >
                                     <Form.Control onChange = {this.setRemovedEmail}type="email" placeholder="Amazing Trip" />
                                 </FloatingLabel>
-                                    <Button size = "sm" className = "color-lightBlue p-1" type="submit" onClick = {this.removeMember} value = "">
+                                    <Button size = "sm" className = "color-lightBlue p-1" type="button" onClick = {this.removeMember} value = "">
                                         Remove Member
                                     </Button>
                                 </Form>
@@ -711,11 +780,11 @@ export class App extends React.Component<AppProps, AppState> {
                     //    trigger ="click" rootClose placement = "bottom" overlay = {popoverClickRootClose}
                     //>
                     <tr>
-                        <td>{this.state.groupItemList[i].item}</td>
+                        <td><b>{this.state.groupItemList[i].item}</b></td>
                         <td>{this.state.groupItemList[i].amountNeeded}</td>
                         <td>{volunteerRows}</td>
-                        <td>I will bring: 
-                        <MDBInput placeholder='None' id='typeNumber' type='number' min = '0' onChange = {(evt) =>this.handleVolunteer(evt, this.state.groupItemList[i].id)} defaultValue = {amountSignedUpFor}/>
+                        <td>
+                            <MDBInput className = "d-inline w-25" placeholder='None' id='typeNumber' type='number' min = '0' onChange = {(evt) =>this.handleVolunteer(evt, this.state.groupItemList[i].id)} defaultValue = {amountSignedUpFor}/>
                         </td>
                         <td><CloseButton onClick = {(evt) =>this.removeItem(evt, this.state.groupItemList[i].id)}/></td>
                     </tr>
@@ -823,19 +892,19 @@ export class App extends React.Component<AppProps, AppState> {
                         <hr/>
 
                         <h5>Group Members:</h5>
-                        <Table striped bordered hover>
-                            <thead>
+                        <MDBTable striped borderless>
+                            <MDBTableHead>
                                 <tr>
-                                <th>#</th>
+                                <th className = "large-width">#</th>
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Status</th>
                                 </tr>
-                            </thead>
-                            <tbody>
+                            </MDBTableHead>
+                            <MDBTableBody>
                                 {members}
-                            </tbody>
-                        </Table>
+                            </MDBTableBody>
+                        </MDBTable>
 
                         {editMembers}
                         
@@ -891,7 +960,7 @@ export class App extends React.Component<AppProps, AppState> {
                                             </Col>
                                             <Col>
 
-                                            <Button size = "sm" className = "color-lightBlue p-1" type="submit" onClick = {this.addExpense}>
+                                            <Button size = "sm" className = "color-lightBlue p-1" type="button" onClick = {this.addExpense}>
                                                 Add Expense
                                             </Button>
                                             </Col>
@@ -934,7 +1003,7 @@ export class App extends React.Component<AppProps, AppState> {
                                             <MDBInput placeholder='Amount Needed' id='typeNumber' type='number' min = '1' onChange = {this.setAmount}/>
                                             </Col>
                                             <Col>
-                                            <Button size = "sm" className = "color-lightBlue p-1" type="submit" onClick = {this.addGroupItem}>
+                                            <Button size = "sm" className = "color-lightBlue p-1" type="button" onClick = {this.addGroupItem}>
                                                 Add Item
                                             </Button>
                                             </Col>
@@ -1214,6 +1283,7 @@ export class App extends React.Component<AppProps, AppState> {
         //console.log("unknown error server error ")
     }
     
+    
 
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -1248,7 +1318,24 @@ export class App extends React.Component<AppProps, AppState> {
         }).then(this.handleSetVolunteers).catch(this.handleServerError)
     }
 
-    
+    makeCreator = (evt: MouseEvent<HTMLButtonElement>, memberID: number) => {
+        document.body.click()
+        const url2 = "/api/make-creator"
+        fetch(url2, {method: "POST", 
+        body:JSON.stringify({"member_id": memberID}),
+        headers: {"Content-Type": "application/json"}
+        }).then(this.handleMakeCreatorResponse).catch(this.handleServerError)
+    }
+    handleMakeCreatorResponse =(res: Response): void => {
+        if (res.status === 200)
+        {
+            res.json().then(this.handleCreateMemberSet2)
+        }
+        else{
+            console.log("status for making creator not 200")
+
+        }
+    }
 
     removeCost = (evt: MouseEvent<HTMLButtonElement>, costID: number) => {
         const url2 = "/api/remove-cost"
@@ -1385,6 +1472,8 @@ export class App extends React.Component<AppProps, AppState> {
     }
 
     handleArchive = (evt: MouseEvent<HTMLButtonElement>, memberID: number)=>{
+        //this.hidePopover()
+        document.body.click()
         console.log("got to handleArchive")
         const url2 = "/api/archive"
             fetch(url2, {method: "POST", 
@@ -1392,7 +1481,13 @@ export class App extends React.Component<AppProps, AppState> {
             headers: {"Content-Type": "application/json"}
         }).then(this.handleArchiveResponse).catch(this.handleServerError)
     }
+
+    /*
+    hidePopover = () => {
+        this.refs.overaly.hide();
+    }*/
     handleUnarchive = (evt: MouseEvent<HTMLButtonElement>, memberID: number)=>{
+        document.body.click()
         console.log("got to handleUnarchive")
         const url2 = "/api/unarchive"
             fetch(url2, {method: "POST", 
@@ -1401,6 +1496,8 @@ export class App extends React.Component<AppProps, AppState> {
         }).then(this.handleArchiveResponse).catch(this.handleServerError)
     }
     handleRemoveMember = (evt: MouseEvent<HTMLButtonElement>, tripID: number) => {
+        document.body.click()
+
         const url = "/api/remove-member"
             fetch(url, {method: "POST", 
                         body:JSON.stringify({"user_id": this.state.userID, "trip_id": tripID}),
@@ -1707,6 +1804,8 @@ export class App extends React.Component<AppProps, AppState> {
 
 
     sendInvite1 = (): void => {
+        this.setState({invitedEmail: ""});
+
         const url = "/api/get-user-id?email=" + encodeURIComponent(this.state.invitedEmail)
             fetch (url, {method: "GET", 
             headers: {"Content-Type": "application/json"}
@@ -1725,7 +1824,7 @@ export class App extends React.Component<AppProps, AppState> {
     sendInvite = (vals: number): void => {
         if (vals<0)
         {
-            alert("email is not signed up with PlanTogether")
+            alert("email is not signed up with PlanTogether or email has already been invited")
         }
         else 
         {
@@ -1754,7 +1853,6 @@ export class App extends React.Component<AppProps, AppState> {
         }
     }
     handleCreateMemberSet2 = (vals: any) => {
-        this.setState({invitedEmail: ""});
         const url2 = "/api/get-all-members?trip_id=" + encodeURIComponent(this.state.trip.tripID)
             fetch (url2, {method: "GET", 
             headers: {"Content-Type": "application/json"}
