@@ -43,6 +43,7 @@ The relative process is as follows:
 - 1 week connecting back end to front end and fine-tuning a realistic idea of the finished outcome
 - 1 week adding finishing touches
 - a few days to figure out how to deploy the website to Azure
+  - moved everything in the build folder of the client side into its own folder of the server side so I can just deploy the server side of the app and simplify things
 
 
 ### Things I learned
