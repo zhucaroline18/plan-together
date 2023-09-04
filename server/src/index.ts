@@ -10,7 +10,7 @@ const port = 8080;
 const app = express();
 app.use(bodyParser.json());
 
-const clientFileDir = path.join(__dirname, '../clientbuild');
+const clientFileDir = path.join(__dirname, '../../client/build');
 console.log(`clientFileDir=${clientFileDir}`);
 app.use(express.static(clientFileDir));
 

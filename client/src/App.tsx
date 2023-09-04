@@ -200,7 +200,9 @@ export class App extends React.Component<AppProps, AppState> {
                         }
                         .color-darkBlue {
                             background-color: rgb(0, 108, 132);
+                            color: rgb(0,0,0)
                         }
+
                         .color-pink {
                             background-color: #FFCCBB;
                         }
@@ -712,7 +714,7 @@ export class App extends React.Component<AppProps, AppState> {
                                     label="Email of invited member"
                                     className="mb-3"
                                 >
-                                <Form.Control onChange = {this.setInvitedEmail} type="email" defaultValue = {this.state.invitedEmail}/>
+                                <Form.Control onChange = {this.setInvitedEmail} type="email" value = {this.state.invitedEmail}/>
                                 </FloatingLabel>
                                     <Button size = "sm" className = "color-lightBlue p-1" type="button" onClick = {this.sendInvite1} >
                                         Send Invite
@@ -730,7 +732,7 @@ export class App extends React.Component<AppProps, AppState> {
                                     label="Email of member you wish to remove"
                                     className="mb-3"
                                 >
-                                    <Form.Control onChange = {this.setRemovedEmail}type="email" placeholder="Amazing Trip" />
+                                    <Form.Control onChange = {this.setRemovedEmail}type="email" value={this.state.removedEmail} />
                                 </FloatingLabel>
                                     <Button size = "sm" className = "color-lightBlue p-1" type="button" onClick = {this.removeMember} value = "">
                                         Remove Member
@@ -921,11 +923,11 @@ export class App extends React.Component<AppProps, AppState> {
                         </Tab>
 
 
-                        <Tab eventKey="GroupTracker" title="GroupTracker">
+                        <Tab eventKey="GroupTracker" title="Group Cost Tracker">
 
                             <Table striped borderless hover>
-                                <thead>
-                                    <tr>
+                                <thead className = "color-darkBlue">
+                                    <tr className = "color-darkBlue">
                                     <th>Item</th>
                                     <th>Person to Pay</th>
                                     <th>Total Cost</th>
@@ -953,13 +955,13 @@ export class App extends React.Component<AppProps, AppState> {
                                         <Form className = "p-3">
                                         <BootRow>
                                             <Col xs = {4}>
-                                            <Form.Control placeholder="Expense" onChange = {this.setExpense} />
+                                            <Form.Control placeholder="Expense" onChange = {this.setExpense} value = {this.state.expense} />
                                             </Col >
                                             <Col xs = {4}>
-                                            <Form.Control placeholder="Who to Pay" onChange = {this.setWhoToPay}/>
+                                            <Form.Control placeholder="Who to Pay" onChange = {this.setWhoToPay} value = {this.state.whoToPay}/>
                                             </Col>
                                             <Col xs = {2}>
-                                            <MDBInput placeholder='Total Cost ($)' id='typeNumber' type='number' min = '0' step = '0.01' onChange = {this.setTotalCost}/>
+                                            <MDBInput placeholder='Total Cost ($)' id='typeNumber' type='number' min = '0' step = '0.01' onChange = {this.setTotalCost} value = {this.state.totalAmount}/>
                                             </Col>
                                             <Col>
 
@@ -976,7 +978,7 @@ export class App extends React.Component<AppProps, AppState> {
                             </Accordion>
                         </Tab>
 
-                        <Tab eventKey="GroupPacker" title="GroupPacker">
+                        <Tab eventKey="GroupPacker" title="Group Packing">
                         <Table striped borderless hover>
                                 <thead>
                                     <tr>
@@ -1000,10 +1002,10 @@ export class App extends React.Component<AppProps, AppState> {
                                         <Form className = "p-3">
                                         <BootRow>
                                             <Col xs = {4}>
-                                            <Form.Control placeholder="Item" onChange = {this.setItem} />
+                                            <Form.Control placeholder="Item" onChange = {this.setItem} value = {this.state.groupItem} />
                                             </Col >
                                             <Col xs = {2}>
-                                            <MDBInput placeholder='Amount Needed' id='typeNumber' type='number' min = '1' onChange = {this.setAmount}/>
+                                            <MDBInput placeholder='Amount Needed' id='typeNumber' type='number' min = '1' onChange = {this.setAmount} value ={this.state.amount} />
                                             </Col>
                                             <Col>
                                             <Button size = "sm" className = "color-lightBlue p-1" type="button" onClick = {this.addGroupItem}>
@@ -1499,6 +1501,7 @@ export class App extends React.Component<AppProps, AppState> {
         }).then(this.handleArchiveResponse).catch(this.handleServerError)
     }
     handleRemoveMember = (evt: MouseEvent<HTMLButtonElement>, tripID: number) => {
+        this.setState({removedEmail:""});
         document.body.click()
 
         const url = "/api/remove-member"
@@ -1511,6 +1514,8 @@ export class App extends React.Component<AppProps, AppState> {
 
 
     addGroupItem = (): void => {
+        this.setState({groupItem: ""});
+        this.setState({amount: 1});
         const url = "/api/add-group-item"
             fetch(url, {method: "POST", 
                     body:JSON.stringify({"item": this.state.groupItem,"trip_id": this.state.trip.tripID, "amountNeeded": this.state.amount}),
@@ -1530,6 +1535,9 @@ export class App extends React.Component<AppProps, AppState> {
     }
 
     addExpense = () : void => {
+        this.setState({whoToPay:""});
+        this.setState({totalAmount: 0});
+        this.setState({expense: ""});
         const url = "/api/add-cost"
             fetch(url, {method: "POST", 
                     body:JSON.stringify({"trip_id": this.state.trip.tripID, "expense": this.state.expense, "whoToPay": this.state.whoToPay, "totalCost": this.state.totalAmount}),
@@ -1719,6 +1727,10 @@ export class App extends React.Component<AppProps, AppState> {
     handleCreateTripSet = (vals:number)=> {
         //console.log("Successful!!")
         //console.log(vals);
+        const groupItemList: GroupItem[] = [];
+        const expenses: Expense[] = [];
+        this.setState({expenses: expenses})
+        this.setState({groupItemList: groupItemList})
         this.setState({tripID: vals});
         this.setState({memberStatus:"creator"})
 
