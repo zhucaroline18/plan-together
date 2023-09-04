@@ -284,6 +284,9 @@ export class App extends React.Component<AppProps, AppState> {
                         .table td {
                             text-align: center;
                             } 
+                        .table th {
+                            text-align: center;
+                        } 
                     `}
                     </style>
                     <Navbar className = "color-nav" id = "navBar"  data-bs-theme="dark">
@@ -920,7 +923,7 @@ export class App extends React.Component<AppProps, AppState> {
 
                         <Tab eventKey="GroupTracker" title="GroupTracker">
 
-                            <Table striped bordered hover>
+                            <Table striped borderless hover>
                                 <thead>
                                     <tr>
                                     <th>Item</th>
@@ -974,7 +977,7 @@ export class App extends React.Component<AppProps, AppState> {
                         </Tab>
 
                         <Tab eventKey="GroupPacker" title="GroupPacker">
-                        <Table striped bordered hover>
+                        <Table striped borderless hover>
                                 <thead>
                                     <tr>
                                     <th>Item</th>
