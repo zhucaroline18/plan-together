@@ -1,5 +1,5 @@
 # Plan Together app
-The goal of this website is to provide a website where people can plan trips together with all the tools in one place. The website will simplify the process of planning in groups and lessen the load of trip planners. 
+The goal of this app is to provide a service where people can plan trips together with all the tools in one place. The website will simplify the process of planning in groups and lessen the load of trip planners. 
 
 ### Motivation 
 Having planned several trips with both large and small groups of friends, I usually use spreadsheets in an attempt to keep everything orderly and in one place but while my spreadsheets make sense to me, they may not be all that intuitive for many other group members. This website would be a great way to clarify and simplify the overall process of group planning. I hope to use this website while planning future trips of mine. 
